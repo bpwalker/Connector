@@ -1,0 +1,1037 @@
+<html>  
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+		<title>Dashboard</title>
+                <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+		<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<!--<link href="http:////netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" media="screen">-->
+		<link href="css/callModal.css" rel="stylesheet">
+		<link href="css/userTable.css" rel="stylesheet">
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+		<script src="//code.jquery.com/jquery.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		<style>
+				#sortableListOfDevices { list-style-type: none; margin: 0; padding: 0; width: 90%; }
+				#sortableListOfDevices li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+				#sortableListOfDevices li span { position: absolute; margin-left: -1.3em; }
+        #newContactDeviceList { list-style-type: none; margin: 0; padding: 0; width: 90%; }
+        #newContactDeviceList li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+        #newContactDeviceList li span { position: absolute; margin-left: -1.3em; }
+				div.target-available { background: #FFFFCC; }
+				div.target-hover { background: #99ff99; }
+				div.delete-hover { background: #FAF5B1; }
+				.friend-status {
+				  float: right;
+          display: inline-block;
+          padding-left: 5;
+        }
+		</style>
+	</head>
+	<body> 
+		<div class="container">
+			<div class="navbar">
+				<div class="navbar-inner">
+					<img src="images/logo.png">
+					<form class="navbar-form pull-right" action="/logout" method="POST">
+						<button id="logoutButton" class="btn btn-lg btn-danger">Log out</button>
+					</form>
+				</div>
+			</div>
+			<div hidden id="notificationMessage" class="label label-warning" style="text-align:center;border-radius: 10px;border-top-left-radius:0px;border-top-right-radius: 0px; margin-top: -25px;">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				<a id="notificationButton" style="">Click here to enable desktop notifications.</a>
+			</div>
+			<br/>
+			<ul class="nav nav-tabs" style="position: relative;">
+			  <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
+			  <li><a href="#userProfile" data-toggle="tab">Profile</a></li>
+			  <div style="bottom: 0px; right: 0px; position: absolute;">
+			  	Hello {{email}}
+			  </div>
+			</ul>
+			<div class="tab-content" style="overflow: visible;">
+				<div class="tab-pane active" id="home">
+					<div class="container">
+						<div class="dropdown" id="phonepad_dropdown" style="float:right">
+							<img id="phonepad" width="75px;" src='images/dialpad.png' class="dropdown" data-toggle="dropdown" href="#">
+							<ul id="phonepad_number" class="dropdown-menu" style="padding: 0px; margin-left: -40px;">
+							    <input autofocus style="text-align: center; width: 160px; border-radius: 5px;" placeholder="Call Number:" name="call_number" id="call_number">
+							</ul>
+						</div>
+						<div class="hero-unit" style="text-align:center">
+							<h2>Directory</h2>
+							<table class="table table-striped" id="userDataTable">  
+								<thead>  
+									<tr>  
+                                        <th></th>
+										<th>Email</th>  
+										<th>Name</th> 
+										<th>Alias</th>
+									</tr>  
+								</thead>  
+								<tbody></tbody> 
+							</table> 
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane" id="userProfile">
+					<div class="container">
+						<div class="hero-unit span5 offset2">
+							<h2 style="text-align: center">Profile</h2>
+							<div class="form-horizontal" accept-charset="utf-8" id="userProfileInformation" style="display: inline">
+								<div class="control-group">
+									<label for="email" class="control-label">E-Mail Address</label>
+									<div class="controls">
+										<input name="email" type="email" id="email" readonly value="{{email}}">
+									</div>
+								</div>
+								<div class="control-group">
+									<label for="firstName" class="control-label">First Name</label>
+									<div class="controls">
+										<input name="firstName" type="text" id="firstName" readonly value="{{firstName}}">
+									</div>
+								</div>
+								<div class="control-group">
+									<label for="lastName" class="control-label">Last Name</label>
+									<div class="controls">
+										<input name="lastName" type="text" id="lastName" readonly value="{{lastName}}">
+									</div>
+								</div>
+								<div class="control-group">
+									<label for="alias" class="control-label">Your Alias</label>
+									<div class="controls">
+										<input name="alias" type="text" id="alias" readonly value="{{alias}}">
+									</div>
+								</div>
+								<div style="text-align: center;">
+                Contact Devices: (Highest priority at top)
+								<ul id="sortableListOfDevices" class="ui-sortable">
+<!-- 									<li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>Sup</li>
+									<li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>Bro</li>
+									<li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>Ski</li>
+									<li class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>LOL</li> -->
+								{{#contactDeviceArray}}
+<!-- 								<div id="userProfileInformation">
+								  <div class="control-group">
+								    <label class="control-label {{deviceName}}" for="deviceType">Phone Information</label>
+								    <div class="controls"> -->
+<!-- 								      <input type="hidden" class="" value="phone" name="deviceType">
+								      <input name="deviceName" type="text" readonly class="{{deviceName}}" value="{{deviceName}}"> -->
+								      <li class="ui-state-default" id="{{deviceName}}" number="{{deviceValue}}" priority="{{priority}}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{deviceName}} ({{deviceValue}})<button id="{{deviceName}}-remove" value="{{deviceName}}" class="btn-danger btn-sm removeDevice {{deviceName}} pull-right" style="display: none;">X</button><input type="hidden" class="" value="phone" name="deviceType"></li>
+<!-- 								    </div> -->
+<!-- 								    <div class="controls">
+								      <input name="deviceValue" type="text" readonly class="{{deviceName}}" value="{{deviceValue}}">
+								    </div> 
+								    <button value="{{deviceName}}" class="btn-danger removeDevice {{deviceName}}" style="display: none;float:right">X</button>
+								  </div>
+								</div> -->
+								{{/contactDeviceArray}}
+							</ul>
+						</div>
+							</div>
+              <ul id="newContactDeviceList" style="text-align: center; margin: auto;">
+              </ul>
+                <div id="addContactDeviceField" style="display: none; text-align: center; margin: auto;">
+                <button id="addContactDeviceButton" type='button' class="btn" style="margin: auto;">Add Contact Device</button>
+                <br>
+				</div>
+							<div style="margin-top: 40px;">
+								<button type='button' class="btn btn-large btn-primary" onclick="updateUser()" style="display: none; float: left;" id="saveProfileChanges">Save Changes</button>
+								<button type='button' id="editProfileChanges" class="btn btn-large btn-primary" style="float: left;" onclick="editProfile()">Edit Profile</button>
+								<button id="deleteUserButton" class="btn btn-large btn-primary btn-danger" style="float: right;">Delete Account</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="call-modal" class="modal hide fade" data-backdrop="static" data-keyboard="false">
+			<div class="modal-header">
+				<h1 id="calledUserName" ></h1>
+			</div>
+			<div id="receiving-call" style="display: none;">
+				<div class="" style="float:right; margin-top: 15px;">
+					<button id="answer-call" class="btn btn-success" style="margin-right: 20px;">Answer</input>
+					<button id="decline-call" class="btn btn-danger" style="margin-right:10px;">Decline</input>
+				</div>	
+			</div>
+			<div id="video-call" style="display: none;">
+				<div class="modal-body">
+					<div>
+						<video id="remoteVideo" class="remoteVideo" autoplay></video>
+					</div>
+					<div>
+						<video id="localVideo" class="localVideo" autoplay muted></video>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<i href="#" class="fa fa-video-camera fa-2x" id="muteVideo" style="display:none; position: absolute; bottom: 85px; left: 30px; z-index: 20;"></i>
+				<div style="margin-right: 20px; display: inline;">
+                    <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" style="display:none; margin-right: 15px;"/>
+                    <i href="#" class="fa fa-microphone fa-2x" id="mute" style="display:none"></i>
+				</div>
+				<a href="#" id="hangupButton" class="btn btn-danger" data-dismiss="modal" onclick="hangup()" style="display:none">Hangup</a>
+			</div>
+		</div>
+		<div id="profileModal" class="modal hide fade" data-backdrop="static" data-keyboard="false">
+			<div class="modal-header">
+				<h1 id="usernameModal">(Username)</h1>
+			</div>
+			
+				<div class="hero-unit">
+					<div class="form-horizontal" accept-charset="utf-8">
+						<div class="control-group">
+							<label for="email" class="control-label">E-Mail Address</label>
+							<div class="controls">
+								<input name="email" type="email" id="emailModal" readonly value="test">
+							</div>
+						</div>
+						<div class="control-group">
+							<label for="aliasModal" class="control-label">Alias</label>
+							<div class="controls">
+								<input name="alias" type="text" id="aliasModal" readonly value="test">
+							</div>
+						</div>
+					</div>
+				</div>
+			
+			<div class="modal-footer">
+				<a id="backModalButton" class="btn btn-danger" data-dismiss="modal">Back</a>
+				<a id="callModalButton" class="btn btn-success" data-dismiss="modal">Call</a>
+                                <a id="callPhoneModalButton" class="btn btn-success" data-dismiss="modal" style="display: none">Call Phone</a>
+			</div>
+		</div>
+		
+		<div id="friendsList" class="friendDropTarget" style="right:0;bottom:0;position:fixed; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+		  <h3>Friends List</h3>
+		  <div>
+		    <ul class="nav nav-list" id="actualFriendList" style="height:350">
+		      {{#friends}}
+		        <li class="friendsListItem" style="cursor:pointer;" value={{.}}>{{.}}<div name='status_{{.}}' class='friend-status'><img src='images/statusRedSolid.png'></div></li>
+		      {{/friends}}
+		    </ul>
+		  </div>
+		</div>
+		
+		<div id="friendsDeleteBox" style="left:5;bottom:5;position:fixed;height:150;width:150;border:1px dashed #ff0000;display:none">
+		  <p style="text-align:center;padding-top:50px;">Drag friends here to delete them</p>
+		</div>
+		
+		
+		<script src="http://cdn.sockjs.org/sockjs-0.3.4.min.js"></script>
+		<script class="jsbin" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.js"></script>
+		<!--<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>-->
+		<script src="js/callLauncher.js"></script>
+		<script src="js/editProfile.js"></script>
+		<script src="js/addUser.js"></script>
+		<script src="js/bootbox.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		
+		<script>
+			$("#deleteUserButton").click(
+				function(){
+					bootbox.confirm("Are you sure you want to permanently delete your account and all associated data?",function(result){
+						if(result){
+							deleteUser();
+							document.cookie="sessionID=0";
+							window.location.href="/";
+						}else{
+							stopUpdating();
+						}
+					});
+				}
+			);
+			$(".removeDevice").click( function() {
+			  var deviceName = $(this).val();
+        console.log(deviceName);
+			  $("#" + deviceName).remove();
+			  removeContactDevice(deviceName);
+			});
+
+			$("#logoutButton").click(
+				function(){
+					document.cookie="sessionID=0";
+				}
+			);
+			$(document).ready(function() {
+				var userDataTable = {};
+				var calledUser = {};
+				var remoteUser;
+				if(window.webkitNotifications.checkPermission() == 1){
+					$("#notificationMessage").show();
+				}
+				
+				$.event.special.hoverintent = {
+          setup: function() {
+            $( this ).bind( "mouseover", jQuery.event.special.hoverintent.handler );
+          },
+          teardown: function() {
+            $( this ).unbind( "mouseover", jQuery.event.special.hoverintent.handler );
+          },
+          handler: function( event ) {
+            var currentX, currentY, timeout,
+              args = arguments,
+              target = $( event.target ),
+              previousX = event.pageX,
+              previousY = event.pageY;
+       
+            function track( event ) {
+              currentX = event.pageX;
+              currentY = event.pageY;
+            };
+       
+            function clear() {
+              target
+                .unbind( "mousemove", track )
+                .unbind( "mouseout", clear );
+              clearTimeout( timeout );
+            }
+       
+            function handler() {
+              var prop,
+                orig = event;
+       
+              if ( ( Math.abs( previousX - currentX ) +
+                  Math.abs( previousY - currentY ) ) < 7 ) {
+                clear();
+       
+                event = $.Event( "hoverintent" );
+                for ( prop in orig ) {
+                  if ( !( prop in event ) ) {
+                    event[ prop ] = orig[ prop ];
+                  }
+                }
+                // Prevent accessing the original event since the new event
+                // is fired asynchronously and the old event is no longer
+                // usable (#6028)
+                delete event.originalEvent;
+       
+                target.trigger( event );
+              } else {
+                previousX = currentX;
+                previousY = currentY;
+                timeout = setTimeout( handler, 100 );
+              }
+            }
+       
+            timeout = setTimeout( handler, 100 );
+            target.bind({
+              mousemove: track,
+              mouseout: clear
+            });
+          }
+        };
+				
+				$( "#friendsList" ).accordion({
+				  collapsible: true,
+				  active: false,
+          event: "hoverintent"
+        });
+        
+        function addFriend(friendEmail, callback) {
+				  var dataJson = {
+				    friendEmail: friendEmail
+				  };
+				  $.ajax({  
+		        type: "POST",  
+		        url: "/user/addFriend",  
+		        data: JSON.stringify(dataJson)
+	        }).complete(function(data) {
+	          callback(data);
+		      });
+				};
+				
+				function deleteFriend(friendEmail, callback) {
+				  var dataJson = {
+				    friendEmail: friendEmail
+				  };
+				  $.ajax({  
+		        type: "POST",  
+		        url: "/user/deleteFriend",  
+		        data: JSON.stringify(dataJson)
+	        }).complete(function(data) {
+	          if (callback) { callback(data); }
+		      });
+				};
+        
+        $( ".friendDropTarget" ).droppable({
+          target: "tr",
+          addClasses: false,
+          activeClass: "target-available",
+          hoverClass: "target-hover",
+          tolerance: "touch",
+          drop: function( event, ui ) {
+            var ul = $(this).find('ul');
+            addFriend(ui.helper.text(), function(data) {
+              console.log(data);
+              console.log(data.responseText);
+              var jsonData = JSON.parse(data.responseText);
+              console.log(jsonData.status);
+              if (jsonData.status != "error") {
+                $( "<li class='friendsListItem' style='cursor:pointer;' value=" + ui.helper.text() + "></li>" ).text( ui.helper.text() )
+                .append("<div name='status_" + ui.helper.text() + "' class='friend-status'><img src='images/statusRedSolid.png'></div>")
+                .draggable({
+                  scope: 'deleteFriend',
+                  scroll: false,
+                  zIndex: 5,
+                  cursorAt: {
+                    left: 5,
+                    top: 2
+                  },
+                  revert: "invalid",
+                  start: function(event, ui) {
+                    $('#friendsDeleteBox').show();
+                  },
+                  stop: function(event, ui) {
+                    $('#friendsDeleteBox').hide();
+                  },
+                  helper: function() {
+                    return "<p>" + ui.helper.text() + "</p>";
+                  }
+                })
+                .click(function() {
+                  var email = $(this).attr("value");
+					        window.location.href="/call/" + email;
+                })
+                .appendTo( ul );
+                
+              }
+            });
+            
+          }
+        });
+        
+        $('#actualFriendList li').draggable({
+          scope: 'deleteFriend',
+          scroll: false,
+          zIndex: 5,
+          cursorAt: {
+            left: 5,
+            top: 2
+          },
+          revert: "invalid",
+          start: function(event, ui) {
+            $('#friendsDeleteBox').show();
+          },
+          stop: function(event, ui) {
+            $('#friendsDeleteBox').hide();
+          },
+          helper: function() {
+            return "<p>" + $(this).attr("value") + "</p>";
+          }
+        });
+        
+        $('#friendsDeleteBox').droppable({
+          scope: 'deleteFriend',
+          addClasses: false,
+          hoverClass: "delete-hover",
+          tolerance: "touch",
+          drop: function( event, ui ) {
+            $('#actualFriendList li').each(function() {
+              var item = $(this);
+              console.log(item.attr("value"));
+              console.log(ui.helper.text());
+              if (item.attr("value") == ui.helper.text()) {
+                item.remove();
+              }
+            });
+            deleteFriend(ui.helper.text());
+          }
+        });
+        
+        
+        $('#actualFriendList li').click(function() {
+				  var email = $(this).attr("value");
+					window.location.href="/call/" + email;
+				});
+				
+				$('#userDataTable').dataTable( {
+					"bProcessing": true,
+					"sAjaxSource": "/user/userId/all",
+					"sAjaxDataProp": "results",
+					"sDom": '<"top"f>rt<"bottom"ip>',
+                                        "oLanguage": {
+                                                "oPaginate": {
+                                                        "sPrevious": "Previous ",
+                                                        "sNext": " Next"
+                                                },
+                                                "sEmptyTable" : "There doesn't seem to be anything here...",
+                                                "sZeroRecords" : "Your search didn't return any results",
+                                                "sSearch" : "Search by email, name, or phone #:"
+                                        },
+					"aoColumns": [
+					  {"mData": "email"},
+					  {"mData": function ( source, type, val ) {
+              return source.firstName + " " + source.lastName;
+            }},
+					  {"mData": "alias"},
+					],
+					"fnInitComplete": function(){
+						userDataTable = this;
+                                                userDataTable.$('tr').each(function() {
+                                                        var data = userDataTable.fnGetData(this);
+                                                        calledUser = data;
+                                                        console.log(JSON.stringify(calledUser));
+                                                        $(this).prepend("<td name='status_" + calledUser.email + "' class='statusIcon'><img src='images/statusRedSolid.png'></td>");
+                                                        $(this).draggable({
+                                                          scroll: false,
+                                                          zIndex: 5,
+                                                          cursorAt: {
+                                                            left: 5,
+                                                            top: 2
+                                                          },
+                                                          revert: "invalid",
+                                                          helper: function() {
+                                                            return "<p>" + data.email + "</p>";
+                                                          }
+                                                        });
+                                                });
+						userDataTable.$('tr').click(function() {
+							var data = userDataTable.fnGetData(this);
+							calledUser = data;
+							$("#usernameModal").html(calledUser.firstName+" "+calledUser.lastName);
+							$("#emailModal").val(calledUser.email);
+							$("#aliasModal").val(calledUser.alias);
+							$("#profileModal").modal('show');
+						});
+						/*
+						userDataTable.$('tr').mouseenter(function(e) {
+							var data = userDataTable.fnGetData(this);
+							$(e.delegateTarget).append("<div id='hoveringTooltip' class='btn btn-success' style='position:absolute;'></div>");
+							$('#hoveringTooltip').text('Call ' + data.firstName);
+							$('#hoveringTooltip').css({
+								"top" : $(this).offset().top + 5,
+								"left" : $(this).offset().left + 600,
+								"width" : 100
+							});
+						});
+						userDataTable.$('tr').mouseleave(function() {
+							$('#hoveringTooltip').remove();
+						});
+						*/
+					}
+				});
+				$("#backModalButton").click(function(){
+					$("#profileModal").modal('hide');
+				});
+				$("#callModalButton").click(function(){
+					window.location.href="/call/"+$("#emailModal").val();
+				});
+                                $("#callPhoneModalButton").click(function(){
+                                        window.location.href="/call/"+$("#emailModal").val()+"?deviceType=phone"; 
+                                });
+                                $("#volume-bar").change(function() {
+                                        remoteVideo.volume = this.value;
+                                });
+			});
+			$('#call-modal').on('show', function() {
+				$("#profileModal").modal('hide');
+			});
+			$("#addContactDeviceButton").click(
+			  function() {
+          $("#newContactDeviceList").append('<li class="ui-state-default" id="newPhone" number="{{deviceValue}}" priority="999"><span class="ui-icon"></span><input class="newDeviceName" name="deviceName" type="text" placeholder="Alias (e.g. Cell)" style="width: 115px; height: 20px">&nbsp;<input class="newDeviceValue" name="deviceValue" type="text" placeholder="Contact Number" style="width: 150px; height: 20px"><button id="{{deviceName}}-remove" value="{{deviceName}}" class="btn-danger btn-sm removeDevice {{deviceName}} pull-right" style="display: none;">X</button></li><input type="hidden" class="" value="phone" name="deviceType">');
+			  }
+			);
+
+			$('#phonepad_dropdown').click(function (e) {
+				//hacky way to get textbox to focus in bootstrap
+			  setTimeout(function(){$('#call_number').focus()}, 1);
+			});
+
+			$('#phonepad_dropdown').bind('keypress', function(e) {
+				if(e.keyCode==13){
+					window.location.href="/call/phone/" + $('#call_number').val();
+				}
+			});
+
+			$('.dropdown input').bind('click', function (e) {
+			  e.stopPropagation()
+			});
+
+
+/*$('#userProfileInformation').append('<div class="control-group"><label class="control-label" for="deviceType">Phone Information</label><div class="controls"><input type="hidden" value="phone" name="deviceType"><input name="deviceName" type="text" placeholder="Contact Alias (ex: joeCell)"></div><div class="controls"><input name="deviceValue" type="text" placeholder="Contact Value (ex: 555-555-5555)"></div><button value="{{deviceName}}" class="btn-danger removeDevice {{deviceName}}" style="display: none;float:right">X</button></div>');*/
+
+		</script>
+		<script>
+			$(function(){
+				var sock = new SockJS(document.location.origin + '/websocket');
+				var callTimeout;
+				var peerConnection;
+
+				var notifyPermission = false;
+				if(window.webkitNotifications){
+					notifyPermission = (window.webkitNotifications.checkPermission() == 0);
+				}
+				if(notifyPermission){
+					$("#notifiedText").show();
+				}else{
+					$("#notificationButton").show();
+				}
+
+				var callConstraints = {'mandatory': {
+					  'OfferToReceiveAudio':true,
+					  'OfferToReceiveVideo':true,
+					  'VoiceActivityDetection':true }
+				};
+
+				var initialized = false;
+				var callInProgress = false;
+				var notification;
+				var localDescription;
+				var phoneSession;
+              	var inPhonecall = false;
+
+				var localVideo = document.getElementById("localVideo");
+				var remoteVideo = document.getElementById("remoteVideo");
+
+				var hangupButton = document.getElementById("hangupButton");
+				hangupButton.onclick = hangup;
+
+				$("#sortableListOfDevices").sortable({
+					placeholder: "ui-state-highlight",
+					delay: 300,
+					disabled: true,
+					stop: function(event, ui) {
+						$("#sortableListOfDevices li").each(function(i, el) {
+								$(el).attr("priority", i);
+						});
+					}
+				});
+        $("#newContactDeviceList").disableSelection();
+				$("#sortableListOfDevices").disableSelection();
+				$("#sortableListOfDevices li span").each(function(i, el) {
+					$(el).removeClass("ui-icon ui-icon-arrowthick-2-n-s");
+				});
+        $('#sortableListOfDevices li button').each(function(i, el) {
+          $(this).css({ 
+            "position" : "relative", 
+            "top" : $(this).offset().top - 6,
+            "left" : $(this).offset().left + 5
+          });
+        });
+        $('#sortableListOfDevices li button').click(function(e) {
+          var str = this.id;
+          var array = str.split("-");
+
+          $('#'+array[0]).hide();
+        });
+
+				$("#mute").click(function() {
+					if ($("#mute").hasClass("fa-microphone")) {
+						$("#mute").removeClass("fa-microphone");
+            $("#mute").addClass("fa-microphone-slash");
+						if(peerConnection){
+							peerConnection.getLocalStreams().forEach(function(e){
+							        e.getAudioTracks()[0].enabled = false;
+						        });
+                                                }
+					} else {
+						$("#mute").removeClass("fa-microphone-slash");
+                                                $("#mute").addClass("fa-microphone");
+						if(peerConnection){
+							peerConnection.getLocalStreams().forEach(function(e){
+								e.getAudioTracks()[0].enabled = true;
+						  });
+						}
+					}
+				});
+								$("#localVideo").click(function(){$("#muteVideo").trigger('click');})
+                                $("#muteVideo").click(function() {
+                                        if ($("#muteVideo").hasClass("fa-video-camera")) {
+                                                $("#muteVideo").removeClass("fa-video-camera");
+                                                $("#muteVideo").addClass("fa-stop");
+                                                if(peerConnection){
+                                                        peerConnection.getLocalStreams().forEach(function(e){
+                                                                e.getVideoTracks()[0].enabled = false;
+                                                        });
+                                                }
+                                        } else {
+                                                $("#muteVideo").removeClass("fa-stop");
+                                                $("#muteVideo").addClass("fa-video-camera");
+                                                if(peerConnection){
+                                                        peerConnection.getLocalStreams().forEach(function(e){
+                                                                e.getVideoTracks()[0].enabled = true;
+                                                        });
+                                                }
+                                        }
+                                });
+
+				$('#notificationButton').click(function(e){
+					requestNotification();
+				});
+
+				$('#answer-call').click(function(e){
+					if(callTimeout){
+						clearTimeout(callTimeout);
+					}
+					if(notification){
+						notification.close();
+						notification = null;
+					}
+					$('#receiving-call').hide();
+					$('#hangupButton').show();
+					$('#calledUserName').text("Call with " + remoteUser);
+					navigator.getUserMedia({audio:true, video:true}, 
+						function(stream){
+							localVideo.src = URL.createObjectURL(stream);
+							peerConnection.addStream(stream);
+							peerConnection.createAnswer(gotDescription, null, callConstraints);
+							
+							function gotDescription(description){
+								peerConnection.setLocalDescription(description);
+							};
+						},
+						function(error) {
+						  console.log("navigator.getUserMedia error: ", error);
+						}
+					);
+				});
+
+				$('#decline-call').click(function(e){
+					declineCall("The user declined the call.");
+				});
+
+				function declineCall(reason){
+				  $('#call-modal').modal('hide');
+				  $('#receiving-call').hide();
+				  if(callTimeout){
+					clearTimeout(callTimeout);
+				  }
+				  if(notification){
+					notification.close();
+					notification = null;
+				  }
+				  initialized = false;
+				  sock.send(JSON.stringify({"type" : "decline", "message" : {"decline" : reason}}));
+				  
+				  if(inPhonecall){ //hangup on phone
+				    sock.send(JSON.stringify({
+				      "type" : "decline_phonecall", 
+				      "message" : {
+				        "user" : phoneSession
+				      }
+				    }));
+				  }
+				}
+
+				function initialize() {
+					$('#call-modal').modal('show');
+					$('#calledUserName').text('Call');
+					$('#receiving-call').show();
+
+					callTimeout = setTimeout(function(){
+						declineCall("The user did not respond.");
+					}, 15000);
+
+					navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+					var config = {
+   						iceServers: [{
+     						url: 'stun:stun.l.google.com:19302'
+   						}]
+ 					};;
+
+					if(navigator.webkitGetUserMedia){
+            			peerConnection = new webkitRTCPeerConnection(config);
+          			} else if(navigator.mozGetUserMedia){
+            			peerConnection = new mozRTCPeerConnection(config);
+          			} else {
+            			//Weird browser, abort
+            			return;
+          			}
+
+					peerConnection.onicecandidate = function(e){
+						localDescription = e.srcElement.localDescription.sdp;
+            			if(!e.candidate){ //After a null candidate we send sdp
+            				console.log("FINAL SDP: " + JSON.stringify(localDescription));
+            				sock.send(JSON.stringify({"type" : "accept_call", "message" : {"accept_call" : {"sdp":localDescription, "type":"answer"}}}));
+            			}
+					};
+					peerConnection.onaddstream = function(e){
+						remoteVideo.src = URL.createObjectURL(e.stream);
+					};
+
+					initialized = true;
+					callInProgress = false;
+				}
+
+				function initializePhoneCall(user) {
+					$('#call-modal').modal('show');
+					$('#calledUserName').text('Call');
+					$('#receiving-call').show();
+
+					callTimeout = setTimeout(function(){
+						//send message to server to reject
+					}, 15000);
+
+					navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+					var config = {
+   						iceServers: [{
+     						url: 'stun:stun.l.google.com:19302'
+   						}]
+ 					};
+
+ 					var callConstraints = {
+			          mandatory: {
+			            'DtlsSrtpKeyAgreement': 'false'
+			          }
+			        };
+
+					if(navigator.webkitGetUserMedia){
+            			peerConnection = new webkitRTCPeerConnection(config, callConstraints);
+          			} else if(navigator.mozGetUserMedia){
+            			peerConnection = new mozRTCPeerConnection(config, callConstraints);
+          			} else {
+            			//Weird browser, abort
+            			return;
+          			}
+
+					peerConnection.onicecandidate = function(e){
+						localDescription = e.srcElement.localDescription.sdp;
+            			if(!e.candidate){ //After a null candidate we send sdp
+            				sock.send(JSON.stringify({"type" : "accept_phonecall", "message" : {"accept_phonecall" : localDescription, "user" : user}})); //answer phonecall
+						  	callInProgress = true;
+						  	sock.send(JSON.stringify({"type" : "busy", "message" : {"cookie" : document.cookie}})); //Set to busy
+            			}
+					};
+					peerConnection.onaddstream = function(e){
+						remoteVideo.src = URL.createObjectURL(e.stream);
+					};
+
+					initialized = true;
+					callInProgress = false;
+				}
+
+				function hangup(){
+					if(initialized){
+						initialized = false;
+						//Close video webcam
+						if(peerConnection){
+							peerConnection.getLocalStreams().forEach(function(e){
+								e.stop();
+						  	});
+						  	peerConnection.close();
+						}
+
+						//Clear out videos
+						if(localVideo.src){
+							localVideo.src = null;
+						}
+						if(remoteVideo.src){
+							remoteVideo.src = null;
+						}
+
+						//Clear out peer connection
+						peerConnection = null;
+						$('#call-modal').modal('hide');
+						$('#hangupButton').hide();
+                        $('#volume-bar').hide();
+                        $('#mute').hide();
+                        $('#muteVideo').hide();
+
+						if(callInProgress){
+							$('#video-call').hide();
+						}
+
+				        if(inPhonecall){ //hangup on phone
+				          sock.send(JSON.stringify({
+				            "type" : "hangup_phonecall", 
+				            "message" : {
+				              "user" : phoneSession
+				            }
+				          }));
+				        }
+
+						sock.send(JSON.stringify({ //generic hangup for status control
+						  "type" : "hangup", 
+						  "message" : {
+							"hangup" : "hangup"
+						  }
+						}));
+
+						if(callTimeout){
+							clearTimeout(callTimeout);
+						}
+					}
+				}
+
+				function callNotification(caller) {
+					if (notifyPermission && !notification) {
+						notification = window.webkitNotifications.createNotification(
+							'images/phone.png',
+							caller + ' is calling!',
+							'Click to be taken to your call.'
+						);
+
+						notification.onclick = function () {
+							window.focus();
+							notification.close();
+							notification = null;
+							if(callTimeout){
+								clearTimeout(callTimeout);
+							}
+						}
+
+						notification.ondisplay = function() {
+							setTimeout(function() {
+								if(notification){
+									notification.close();
+								}
+							}, 15000);
+						};
+
+						notification.show();
+					}
+
+					flashTitle(caller);
+				}
+				
+				//Polling function, will send a message to the server to get
+			  //the status of the users currently displayed in the directory
+			  //This is here to do it on page load and then do it for intervals
+			  setInterval(function(){
+			    var currTable = $('#userDataTable').dataTable();
+			    currTable.$('tr:visible').each(function() {
+            var user = currTable.fnGetData(this);
+            sock.send(JSON.stringify({"type" : "checkUserStatus", "message" : {"user" : user.email}}));
+          });
+          $('#actualFriendList li').each(function() {
+            var email = $(this).text();
+            sock.send(JSON.stringify({"type" : "checkUserStatus", "message" : {"user" : email}}));
+          });
+        }, 5000);
+
+				function flashTitle(caller){
+					var isOriginal = true;
+					var originalTitle = document.title;
+					var callTitle = caller + " is Calling!";
+					
+					//Resets title and clears the flash interval
+					var resetTitle = function () {
+						if(flash){
+					    	clearInterval(flash);
+					    }
+					    document.title = originalTitle;
+					}
+
+					//Start a interval that flashes the title
+					var flash = setInterval(function(){
+					    document.title = isOriginal ? originalTitle : callTitle;
+					    isOriginal = !isOriginal;
+					}, 1000);
+
+					//Stop after 15 seconds
+					setTimeout(resetTitle, 15000);
+
+					//Stop after user focuses the window
+					$(window).one("focus", resetTitle);
+				}
+
+				function requestNotification(){
+					//If they currently don't give permission, request it
+					if(!notifyPermission){
+						window.webkitNotifications.requestPermission(function(){
+							//If they accepted, set notifyPermissions
+							if(window.webkitNotifications.checkPermission() == 0){
+								notifyPermission = true;
+								$("#notificationMessage").hide();
+							}
+						});
+					}
+				}
+
+				sock.onopen = function() {
+					//Connect to websocket server with cookie
+					sock.send(JSON.stringify({"type" : "connect", "message" : {"cookie" : document.cookie}}));
+					var currTable = $('#userDataTable').dataTable();
+			    	currTable.$('tr:visible').each(function() {
+		            var user = currTable.fnGetData(this);
+		            	sock.send(JSON.stringify({"type" : "checkUserStatus", "message" : {"user" : user.email}}));
+		          	});
+				};
+
+				sock.onmessage = function(data) {        
+					var websocketHandler = {
+						"start_call" : function(){
+							if(!initialized){
+								initialize();
+							}
+							peerConnection.setRemoteDescription(new RTCSessionDescription(data.message.start_call));
+							remoteUser = data.message.remoteUserName.name;
+							$('#calledUserName').text(remoteUser + " is calling you!");
+							callNotification(remoteUser);
+						},
+						"candidate" : function(){
+						  if(data.message.candidate){
+							console.log("CANDIDATE: " + JSON.stringify(data.message.candidate));
+							peerConnection.addIceCandidate(new RTCIceCandidate(data.message.candidate));
+						  }
+						},
+						"hangup" : function(){
+						  hangup();
+						  if(!callInProgress){
+							//Temporary fix for when a caller hangsup or quits before a user can accept the getUserMedia request
+							//TODO: Find out how to cancel a getUserMedia request
+							window.location.pathname = ""
+						  }
+						}, 
+						"disconnect" : function(){
+						  hangup();
+						  if(!callInProgress){
+							//Temporary fix for when a caller hangsup or quits before a user can accept the getUserMedia request
+							//TODO: Find out how to cancel a getUserMedia request
+							window.location.pathname = ""
+						  }
+						},
+						"accept_call" : function(){
+						  $('#video-call').show();
+						  $('#volume-bar').show();
+                          $('#mute').show();
+                          $('#muteVideo').show();
+						  callInProgress = true;
+						},
+						"checkUserStatus" : function(){
+						  var email = data.message.user.replace(".", "\\.");
+						  email = email.replace("@", "\\@");
+						  //console.log(email);
+						  //console.log($('#status_' + email));
+						  //Changes status image based on status from server (on dashboard page aka online, in a call, or offline)
+			              if (data.message.status == 0) {
+			                $('[name=status_' + email + ']').html("<img src='images/statusRedSolid.png'></td>");
+			              }
+			              else if (data.message.status == 1) {
+			                $('[name=status_' + email + ']').html("<img src='images/statusYellowSolid.png'></td>");
+			              }
+			              else if (data.message.status == 2) {
+			                $('[name=status_' + email + ']').html("<img src='images/statusGreenSolid.png'></td>");
+			              }
+						},
+						"start_phonecall" : function(){
+							phoneSession = data.message.user;
+              				inPhonecall = true;
+
+							if(!initialized){
+								initializePhoneCall(data.message.user);
+							}
+							peerConnection.setRemoteDescription(new RTCSessionDescription(data.message.start_phonecall));
+							remoteUser = data.message.callingNumber;
+							$('#calledUserName').text(remoteUser + " is calling you!");
+							callNotification(remoteUser);
+						}
+					};
+
+					data = JSON.parse(data.data);
+					var handler = websocketHandler[data.type];
+					if(handler){
+						var results = handler();
+					}
+				};
+			});
+		</script>
+	</body>
+</html>

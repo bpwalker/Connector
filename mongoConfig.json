@@ -1,0 +1,7 @@
+{
+  "address": "BConn.Persistor",
+  "host": "paulo.mongohq.com",
+  "port": 10034,
+  "pool_size": 20,
+  "db_name": "BConn"
+}

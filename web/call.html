@@ -1,0 +1,664 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+    <title>Call</title>
+
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="/css/callModal.css" rel="stylesheet">
+	<!-- Easy Pie Chart JS -->
+	
+	<!--<link rel="stylesheet"type="text/css" href="/css/easyPieChart.css">-->
+
+  </head>
+
+  <body>
+  
+    <div class="container">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <img src="/images/logo.png">
+          <form class="navbar-form pull-right" action="/logout" method="POST">
+            <button id="logoutButton" class="btn btn-lg btn-danger">Log out</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div id="call-modal" class="modal hide fade" data-backdrop="static" data-keyboard="false">
+		<div class="modal-header">
+			<h1>Call with
+				<div id="call_name"></div>
+			</h1>
+		</div>
+		<div>
+			<div id="call_notification">
+        </div>
+	</div>
+	<div style="text-align:center">
+		<div id="progressDiv">
+			<div>
+				<span  id="desktopProgressBar" class="chart" data-percent="0">
+					<img src="/images/desktop.png" alt="desktop">
+				</span>
+				<span  id="desktopProgressBarRed" class="chart" data-percent="0">
+					<img src="/images/desktop.png" alt="desktop">
+				</span>
+				<span id="progressLine">
+					<img src="/images/line.png" alt="line" style="width:200px;">
+				</span>
+				<span  id="phoneProgressBar" class="chart" data-percent="0">
+					<img src="/images/phoneCircle.png" alt="phone">
+				</span>
+				<span  id="phoneProgressBarRed" class="chart" data-percent="0">
+					<img src="/images/phoneCircle.png" alt="phone">
+				</span>
+			</div>
+			<div>
+				<h3 id="progressText">
+					<!-- jQuery inserts text here-->
+				</h3>
+			</div>
+		</div>
+	</div>
+      <div id="video-call">
+        <div class="modal-body">
+          <div>
+            <video id="remoteVideo" class="remoteVideo" autoplay></video>
+          </div>
+          <div>
+            <video id="localVideo" class="localVideo" autoplay muted></video>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <i href="#" class="fa fa-video-camera fa-2x" id="muteVideo" style="display:none; position: absolute; bottom: 85px; left: 30px; z-index: 20;"></i>
+        <div style="margin-right: 20px; display: inline;">
+          <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" style="display: none; margin-right: 15px;"/>
+          <i href="#" class="fa fa-microphone fa-2x" id="mute" style="display: none"></i>
+        </div>
+        <a href="#" id="hangupButton" class="btn btn-danger" data-dismiss="modal">Hangup</a>
+      </div>
+    </div>
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.js"></script>
+    <script src="http://cdn.sockjs.org/sockjs-0.3.4.min.js"></script>
+  	<script src="/js/jquery.easypiechart.js"></script>
+    <script src="/js/bootbox.min.js"></script>
+
+    <script>
+	$(function() {
+		
+		
+		var progressAnimationIntervalID=0;
+		$('#desktopProgressBar').easyPieChart({
+			barColor: "#0FBE17",
+			lineWidth: 5
+		});
+		$('#phoneProgressBar').easyPieChart({
+			barColor: "#0FBE17",
+			lineWidth: 5
+		});
+		$('#desktopProgressBarRed').easyPieChart({
+			barColor: "#C10010",
+			lineWidth: 5
+		});
+		$('#phoneProgressBarRed').easyPieChart({
+			barColor: "#C10010",
+			lineWidth: 5
+		});
+		var isAnonymous = !(getCookie("sessionID") && getCookie("sessionID")!="0");
+		$('#desktopProgressBarRed').hide();
+		$('#phoneProgressBarRed').hide();
+		$('#desktopProgressBarRed').data('easyPieChart').update(100);
+		$('#phoneProgressBarRed').data('easyPieChart').update(100);
+		//SET PROGRESS METHOD CALLS	
+
+		setProgressCallingDesktop();
+    if(isAnonymous){
+      setProgressEndAnonymous();
+    }
+		//setProgressDesktopDeclined();
+		//setProgressHidden();
+		//setProgressCallingPhone();
+		////////////////
+		
+		
+		function setProgressCallingDesktop(){
+			$('#progressDiv').show();
+			$('#desktopProgressBarRed').hide();
+			$('#phoneProgressBarRed').hide();
+			$('#desktopProgressBar').show();
+			$('#phoneProgressBar').show();
+			if(progressAnimationIntervalID!=0){
+				clearInterval(progressAnimationIntervalID);
+				progressAnimationIntervalID=0;
+			}
+			$('#desktopProgressBar').data('easyPieChart').update(0);
+			$('#phoneProgressBar').data('easyPieChart').update(0);
+			$('#progressText').html("Calling Browser");
+			progressAnimationIntervalID=setInterval(function(){
+				$('#desktopProgressBar').data('easyPieChart').update(0);
+				$('#desktopProgressBar').data('easyPieChart').update(100);
+			},1050);
+		}
+    function setProgressEndAnonymous(){
+      $('#progressLine').hide();
+      $('#phoneProgressBar').hide();
+    }
+
+		function setProgressCallingPhone(){
+			$('#progressDiv').show();
+			$('#desktopProgressBarRed').show();
+			$('#phoneProgressBarRed').hide();
+			$('#desktopProgressBar').hide();
+			$('#phoneProgressBar').show();
+			if(progressAnimationIntervalID!=0){
+				clearInterval(progressAnimationIntervalID);
+				progressAnimationIntervalID=0;
+			}
+			$('#desktopProgressBar').data('easyPieChart').update(0);
+			$('#phoneProgressBar').data('easyPieChart').update(0);
+			$('#progressText').html("Calling Phone");
+			progressAnimationIntervalID=setInterval(function(){
+				$('#phoneProgressBar').data('easyPieChart').update(0);
+				$('#phoneProgressBar').data('easyPieChart').update(100);
+			},1050);
+		}
+    function setProgressCallingPhoneOnly(){
+      $('#progressDiv').show();
+      $('#progressLine').hide();
+      $('#desktopProgressBarRed').hide();
+      $('#phoneProgressBarRed').hide();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').show();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(0);
+      $('#progressText').html("Calling Phone");
+      progressAnimationIntervalID=setInterval(function(){
+        $('#phoneProgressBar').data('easyPieChart').update(0);
+        $('#phoneProgressBar').data('easyPieChart').update(100);
+      },1050);
+    }
+    function setProgressPhoneFailedOnly(){
+      $('#progressDiv').show();
+      $('#progressLine').hide();
+      $('#desktopProgressBarRed').hide();
+      $('#phoneProgressBarRed').show();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').hide();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(0);
+      $('#progressText').html("The user could not be reached");
+      progressAnimationIntervalID=setInterval(function(){
+        $('#phoneProgressBar').data('easyPieChart').update(0);
+        $('#phoneProgressBar').data('easyPieChart').update(100);
+      },1050);
+    }
+    function setProgressAnsweredPhone(){
+      $('#progressDiv').show();
+      $('#progressLine').hide();
+      $('#desktopProgressBarRed').hide();
+      $('#phoneProgressBarRed').hide();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').show();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(100);
+      $('#progressText').html("In Call");
+    }
+    function setProgressCallingPhoneFailed(){
+      $('#progressDiv').show();
+      $('#desktopProgressBarRed').show();
+      $('#phoneProgressBarRed').show();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').hide();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(0);
+      $('#progressText').html("Phonecall Failed.");
+      progressAnimationIntervalID=setInterval(function(){
+        $('#phoneProgressBar').data('easyPieChart').update(0);
+        $('#phoneProgressBar').data('easyPieChart').update(100);
+      },1050);
+    }
+		function setProgressDesktopDeclined(){
+			$('#progressDiv').show();
+			$('#desktopProgressBarRed').show();
+			$('#phoneProgressBarRed').hide();
+			$('#desktopProgressBar').hide();
+			$('#phoneProgressBar').show();
+			if(progressAnimationIntervalID!=0){
+				clearInterval(progressAnimationIntervalID);
+				progressAnimationIntervalID=0;
+			}
+			$('#desktopProgressBar').data('easyPieChart').update(0);
+			$('#phoneProgressBar').data('easyPieChart').update(0);
+			$('#progressText').html("Call was Declined");
+		}
+    function setProgressDesktopDNE(){
+      $('#progressDiv').show();
+      $('#desktopProgressBarRed').show();
+      $('#phoneProgressBarRed').hide();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').show();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(0);
+      $('#progressText').html("This user does not exist");
+    }
+    function setProgressDesktopBusy(){
+      $('#progressDiv').show();
+      $('#desktopProgressBarRed').show();
+      $('#phoneProgressBarRed').hide();
+      $('#desktopProgressBar').hide();
+      $('#phoneProgressBar').show();
+      if(progressAnimationIntervalID!=0){
+        clearInterval(progressAnimationIntervalID);
+        progressAnimationIntervalID=0;
+      }
+      $('#desktopProgressBar').data('easyPieChart').update(0);
+      $('#phoneProgressBar').data('easyPieChart').update(0);
+      $('#progressText').html("This user is currently busy");
+    }
+		function setProgressDesktopOffline(){
+			$('#progressDiv').show();
+			$('#desktopProgressBarRed').show();
+			$('#phoneProgressBarRed').hide();
+			$('#desktopProgressBar').hide();
+			$('#phoneProgressBar').show();
+			if(progressAnimationIntervalID!=0){
+				clearInterval(progressAnimationIntervalID);
+				progressAnimationIntervalID=0;
+			}
+			$('#desktopProgressBar').data('easyPieChart').update(0);
+			$('#phoneProgressBar').data('easyPieChart').update(0);
+			$('#progressText').html("User is offline");
+		}
+		function setProgressHidden(){
+			$('#progressDiv').hide();
+		}
+		
+		
+        var phonecall = false;
+        var callingPhone = false;
+        var user = window.location.pathname.split('/', 3)[2];
+
+        if(user == "phone" && window.location.pathname.split('/', 4)[3]){
+          if(isAnonymous){
+            //No cookie, redirect to home since no anonymous phone calling
+            window.location.pathname = "";
+          }
+          phonecall = true;
+          user = window.location.pathname.split('/', 4)[3];
+        }
+        $("#call_name").text(user);
+		
+        var sock = new SockJS(document.location.origin + '/websocket');
+        var localDescription;
+        var inPhonecall = false;
+        var phoneSession; 
+        var candidates = "";
+        var callConstraints = {'mandatory': {
+          'OfferToReceiveAudio':true,
+          'OfferToReceiveVideo':true }
+        };
+
+        var caller;
+
+        var localVideo = document.getElementById("localVideo");
+        var remoteVideo = document.getElementById("remoteVideo");
+
+        var hangupButton = document.getElementById("hangupButton");
+        hangupButton.onclick = hangup;
+		
+        $("#volume-bar").change(function() {
+            remoteVideo.volume = this.value;
+        });
+
+        $("#mute").click(function() {
+            if ($("#mute").hasClass("fa-microphone")) {
+                $("#mute").removeClass("fa-microphone");
+                $("#mute").addClass("fa-microphone-slash");
+                if(peerConnection){
+                    peerConnection.getLocalStreams().forEach(function(e){
+                        e.getAudioTracks()[0].enabled = false;
+                    });
+                }
+            } else {
+                $("#mute").removeClass("fa-microphone-slash");
+                $("#mute").addClass("fa-microphone");
+                if(peerConnection){
+                    peerConnection.getLocalStreams().forEach(function(e){
+                        e.getAudioTracks()[0].enabled = true;
+                    });
+                }
+            }
+        });
+                $("#localVideo").click(function(){$("#muteVideo").trigger('click');})
+
+        $("#muteVideo").click(function() {
+            if ($("#muteVideo").hasClass("fa-video-camera")) {
+                $("#muteVideo").removeClass("fa-video-camera");
+                $("#muteVideo").addClass("fa-stop");
+                if(peerConnection){
+                    peerConnection.getLocalStreams().forEach(function(e){
+                        e.getVideoTracks()[0].enabled = false;
+                    });
+                }
+            } else {
+                $("#muteVideo").removeClass("fa-stop");
+                $("#muteVideo").addClass("fa-video-camera");
+                if(peerConnection){
+                    peerConnection.getLocalStreams().forEach(function(e){
+                        e.getVideoTracks()[0].enabled = true;
+                    });
+                }
+            }
+        });
+
+        function getCookie(name) {
+	        if(document.cookie){
+	          var parts = document.cookie.split(name + "=");
+	      	    if (parts.length == 2){
+                return parts.pop().split(";").shift();
+              }
+      	  }
+          return null;
+      	}
+
+        function getCaller(){
+          if(getCookie("sessionID") && getCookie("sessionID")!="0"){
+            console.log("NO " + getCookie("sessionID"));
+            caller = {"cookie" : document.cookie};
+            initialize();
+            $('#call-modal').modal('toggle');
+          } else{
+            console.log("YES");
+            bootbox.prompt("What is your display name?", function(result){                
+              if (result === null) {                                             
+                caller = {"name" : "anonymous"};                                                      
+              } else {
+                caller = {"name" : result};                          
+              }
+              $('#call-modal').modal('toggle');
+              initialize();
+            });
+          }
+        }
+
+        function initialize() {
+          var config = {
+            iceServers: [{
+              url: 'stun:stun.l.google.com:19302'
+            }]
+          };
+
+          var callConstraints = {
+            mandatory: {
+              'DtlsSrtpKeyAgreement': 'false'
+            }
+          };
+
+      	  allowAudioVideo();
+
+          if(navigator.webkitGetUserMedia){
+            peerConnection = new webkitRTCPeerConnection(config, callConstraints);
+          } else if(navigator.mozGetUserMedia){
+            peerConnection = new mozRTCPeerConnection(config, callConstraints);
+          } else {
+            //Weird browser, abort
+            return;
+          }
+          peerConnection.onicecandidate = function(e){
+            localDescription = e.srcElement.localDescription.sdp;
+            if(!e.candidate){ //After a null candidate we send sdp
+              sock.send(JSON.stringify({"type" : "start_call", "message": {"start_call" : {"sdp":localDescription, "type":"offer"}, "user" : user, "remoteUserName" : caller}}));
+            }
+          };
+          peerConnection.onaddstream = function(e){
+            console.log("ADDED REMOTE STREAM");
+             remoteVideo.src = URL.createObjectURL(e.stream);
+          };
+
+          navigator.getUserMedia({audio:true, video:true}, 
+            function(stream){
+              localVideo.src = URL.createObjectURL(stream);
+              peerConnection.addStream(stream);
+
+              if(navigator.webkitGetUserMedia){
+                peerConnection.createOffer(gotDescription, function(){}, {mandatory: {OfferToReceiveVideo:true, OfferToReceiveAudio:true}});
+              } else if(navigator.mozGetUserMedia){
+                peerConnection.createOffer(gotDescription, function(){
+                  console.log("Firefox create offer failed.")});
+              } else {
+                //Weird browser, abort
+                return;
+              }              
+
+              function gotDescription(description){
+                peerConnection.setLocalDescription(description);
+              };
+            },
+            function(error) {
+              console.log("navigator.getUserMedia error: ", error);
+            }
+          );
+        }
+
+        function initializePhoneCall() {
+          $('#call-modal').modal('toggle');
+          setProgressCallingPhoneOnly();
+
+          var config = {
+            iceServers: [{
+              url: 'stun:stun.l.google.com:19302'
+            }]
+          };
+
+          var callConstraints = {
+            mandatory: {
+              'DtlsSrtpKeyAgreement': 'false'
+            }
+          };
+
+          allowAudioVideo();
+
+          if(navigator.webkitGetUserMedia){
+            peerConnection = new webkitRTCPeerConnection(config, callConstraints);
+          } else if(navigator.mozGetUserMedia){
+            peerConnection = new mozRTCPeerConnection(config, callConstraints);
+          } else {
+            //Weird browser, abort
+            return;
+          }
+          peerConnection.onicecandidate = function(e){
+            localDescription = e.srcElement.localDescription.sdp;
+            if(!e.candidate){ //After a null candidate we send sdp
+                callingPhone = true;
+                sock.send(JSON.stringify({"type" : "start_phoneCall", "message":{"sdp" : localDescription, "cookie" : document.cookie, "number" : user}}));
+            }
+          };
+          peerConnection.onaddstream = function(e){
+            console.log("ADDED REMOTE STREAM");
+             remoteVideo.src = URL.createObjectURL(e.stream);
+          };
+
+          navigator.getUserMedia({audio:true, video:true}, 
+            function(stream){
+              localVideo.src = URL.createObjectURL(stream);
+              peerConnection.addStream(stream);
+
+              if(navigator.webkitGetUserMedia){
+                peerConnection.createOffer(gotDescription, function(){}, {mandatory: {OfferToReceiveVideo:true, OfferToReceiveAudio:true}});
+              } else if(navigator.mozGetUserMedia){
+                peerConnection.createOffer(gotDescription, function(){
+                  console.log("Firefox create offer failed.")});
+              } else {
+                //Weird browser, abort
+                return;
+              }              
+
+              function gotDescription(description){
+                peerConnection.setLocalDescription(description);
+              };
+            },
+            function(error) {
+              console.log("navigator.getUserMedia error: ", error);
+            }
+          );
+        }
+
+      	function allowAudioVideo() {
+                navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      	}
+
+        function setRemoteDescription(data){
+          if(navigator.webkitGetUserMedia){
+            peerConnection.setRemoteDescription(new RTCSessionDescription(data.message.accept_call));
+          } else if(navigator.mozGetUserMedia){
+            peerConnection.setRemoteDescription(new mozRTCSessionDescription(data.message.accept_call));
+          }
+        }
+
+        function hangup() {
+          if(inPhonecall){ //hangup on phone
+            sock.send(JSON.stringify({
+              "type" : "hangup_phonecall", 
+              "message" : {
+                "user" : phoneSession
+              }
+            }));
+          }
+
+          if(callingPhone){ //hangup on phone
+            sock.send(JSON.stringify({
+              "type" : "abort_phonecall", 
+              "message" : {
+                "cookie" : document.cookie
+              }
+            }));
+          }
+
+          sock.send(JSON.stringify({ //generic hangup for status control
+            "type" : "hangup", 
+            "message" : {
+              "hangup" : "hangup"
+            }
+          }));
+          $('#call-modal').modal('toggle');
+          window.location.pathname = ""
+        }
+
+        sock.onopen = function() {
+          if(document.cookie){
+            sock.send(JSON.stringify({"type" : "busy", "message" : {"cookie" : document.cookie}}));
+          }
+          if(!phonecall){
+            getCaller();
+          } else{
+            initializePhoneCall();
+          }
+        };
+
+        sock.onmessage = function(data) {
+          var websocketHandler = {
+            "accept_call" : function(){
+              console.log("Accept call!!!");
+              setRemoteDescription(data);
+				      setProgressHidden();
+              $("#video-call").toggle();
+              $('#volume-bar').show();
+              $('#mute').show();
+              $('#muteVideo').show();
+              sock.send(JSON.stringify(data));
+            },
+            "accept_phonecall" : function(){
+              setProgressAnsweredPhone();
+              setRemoteDescription(data);
+              phoneSession = data.message.user;
+              inPhonecall = true;
+              callingPhone = false;
+            },
+            "candidate" : function(){
+              if(data.message.candidate){
+                peerConnection.addIceCandidate(new RTCIceCandidate(data.message.candidate));
+              }
+            },
+            "hangup" : function(){
+              if(callingPhone){
+                //Notification that they did not answer phone, calling next phone
+              } else{
+                hangup();
+              }
+            },
+            "disconnect" : function(){
+              hangup();
+            },
+            "decline" : function(){
+              //$("#call_notification").toggle();
+              //$("#call_notification").text(data.message.decline);
+			        setProgressDesktopDeclined();
+              if(isAnonymous){
+                setProgressEndAnonymous();
+              }
+            },
+            "offline_notification" : function(){
+              setProgressCallingPhone();
+              //if phone exists, call phone instead of static number
+              if (!isAnonymous) { //check if cookie
+                callingPhone = true;
+                sock.send(JSON.stringify({"type" : "phoneCall", "message":{"sdp" : localDescription, "cookie" : document.cookie, "user" : user}}));
+              }else{
+                setProgressDesktopOffline();
+                setProgressEndAnonymous();
+              }
+            },
+            "dne_notification" : function(){
+              setProgressDesktopDNE();
+              if(isAnonymous){
+                setProgressEndAnonymous();
+              }
+            },
+            "busy_notification" : function(){
+              setProgressDesktopBusy();
+              if(isAnonymous){
+                setProgressEndAnonymous();
+              }
+            },
+            "phonecall_failed" : function(){
+              setProgressCallingPhoneFailed();
+            },
+            "phonecall_not_reached" : function(){
+              setProgressPhoneFailedOnly();
+            }
+          };
+
+          data = JSON.parse(data.data);
+          var handler = websocketHandler[data.type];
+          if(handler){
+            var results = handler();
+          }
+        };
+      });
+    </script>
+  </body>
+</html>

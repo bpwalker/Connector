@@ -1,0 +1,15 @@
+tr {
+	cursor: default;
+}
+
+td {
+	cursor: pointer;
+}
+
+#userDataTable_previous {
+        cursor: pointer;
+}
+
+#userDataTable_next {
+        cursor: pointer;
+}

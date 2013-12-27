@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+
+    <title>Signup</title>
+
+		<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+		<link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+		<link href="css/style.css" rel="stylesheet">
+		<link href="js/qtip/jquery.qtip.css" rel="stylesheet">
+	</head>
+	<body>
+		<div class="container">
+			<div class="navbar">
+				<div class="navbar-inner" method="POST">
+					<img src="images/logo.png">
+					<div class="navbar-form" style="float: right;"> <!-- action="/dashboard" -->
+						<input id="loginEmail" name="email" type="text" class="span2" placeholder="Email address">
+						<input id="loginPassword" name="password" type="password" class="span2" placeholder="Password">
+						<button id="signin" class="btn btn-lg btn-primary" type="submit">Sign in</button>
+						<br>
+						<!-- <label class="checkbox"><input type="checkbox" value="remember-me"> Remember me</label> -->
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="container">
+		<div id="messageBox" class="alert alert-error" hidden>
+			<!--<button type="button" class="hide" data-dismiss="alert">&times;</button> If a user presses this button, future error message aren't shown. So I removed it for now - Nathan -->
+			<center>
+				<div id="messageText">
+				
+				</div>
+			</center>
+		</div>
+			<div class="hero-unit span4 offset3">
+				<h2 style="text-align: center">Create New Account</h2>
+				<form class="form-horizontal" id="registrationform" accept-charset="utf-8">
+					<div class="control-group">
+						<label for="email" class="control-label">	
+							E-Mail Address 
+						</label>
+						<div class="controls">
+							<input name="email" type="email" id="email">
+						</div>
+					</div>
+
+					<div class="control-group">
+						<label for="firstName" class="control-label">
+							First Name
+						</label>
+						<div class="controls">
+							<input name="firstName" type="text" id="firstName">
+						</div>
+					</div>
+
+					<div class="control-group">
+						<label for="lastName" class="control-label">
+							Last Name
+						</label>
+						<div class="controls">
+							<input name="lastName" type="text" id="lastName">
+						</div>
+					</div>
+
+					<div class="control-group">
+						<label for="password" class="control-label">
+							Password
+						</label>
+						<div class="controls">
+							<input id="registerPassword" name="password" type="password">
+						</div>
+					</div>
+					<div class="control-group">
+						<label for="password" class="control-label">
+							Retype Password
+						</label>
+						<div class="controls">
+							<input id="registerPassword2" name="password" type="password">
+						</div>
+					</div>
+					
+					
+				</form>
+				<br/><br/>
+				<center>
+					<button id="createAccountButton" type='button' class="btn btn-large btn-primary">Create Account</button>
+				</center>
+			</div>
+		</div>
+		<script src="//code.jquery.com/jquery.js"></script>
+		<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.js"></script>
+		<script src="addUser.js"></script>
+		<!--<script src="registrationValidator.js"></script>-->
+		<script src="jquery.validate.min.js"></script>
+		<script src="js/qtip/jquery.qtip.min.js"></script>
+		<script src="js/addUser.js"></script>
+		<script src="js/jquery.chroma-hash.js"></script>
+		<script>
+			$(function(){
+				$("input:password").chromaHash({bars: 3, salt:"7be82b35cb0199120eea35a4507c9acf", minimum:6});
+				$('#loginPassword').bind('keypress', function(e) {
+					if(e.keyCode==13){
+						$("#signin").trigger("click");
+					}
+				});
+				$('#registerPassword2').bind('keypress', function(e) {
+					if(e.keyCode==13){
+						$("#createAccountButton").trigger("click");
+					}
+				});
+				function addVerification(elementID,validateCallback,errorMessage,verifiedVar){
+					$("#"+elementID).addClass("validated");
+					var check=function(){
+						if(validateCallback($("#"+elementID).val())){
+							if(!$("#"+elementID).hasClass('validationPassed')){
+								$("#"+elementID).css('background',"url(/images/statusGreenSolid.png) no-repeat scroll 7px 7px");
+								$("#"+elementID).qtip('destroy');
+								$("#"+elementID).addClass("validationPassed");
+							}
+						}else{
+							if($("#"+elementID).hasClass('validationPassed') || 'object' !== typeof $("#"+elementID).data('qtip')){
+								$("#"+elementID).removeClass("validationPassed");
+								$("#"+elementID).css('background',"url(/images/statusRedSolid.png) no-repeat scroll 7px 7px");
+								if( 'object' !== typeof $("#"+elementID).data('qtip')){
+									$("#"+elementID).qtip({
+										content: errorMessage,
+										position: {
+											my: 'middle left',
+											at: 'middle right',
+											target: $("#"+elementID),
+										},
+										show: {
+											when: false, // Don't specify a show event
+											ready: true // Show the tooltip when ready
+										},
+										hide: false
+									});
+								}
+								$("#"+elementID).qtip("show");
+							}
+						}
+					};
+					$("#"+elementID).keyup(check);
+					$("#"+elementID).change(check);
+				}
+				function validateEmail(email) { 
+					var pattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+					return pattern.test(email);
+				}
+				function validateName(email) { 
+					return email.length>=1;
+				}
+				function validatePassword(email) { 
+					return email.length>=6;
+				}
+				function validatePassword2(email) { 
+					return email.length>=6&&$('#registerPassword').val()==$('#registerPassword2').val();
+				}
+				
+				addVerification("email",validateEmail,"Please enter a valid email address");
+				addVerification("firstName",validateName,"Name should be at least 1 letter");
+				addVerification("lastName",validateName,"Last Name should be at least 1 letter");
+				addVerification("registerPassword",validatePassword,"Password should be at least 6 characters");
+				addVerification("registerPassword2",validatePassword2,"Password should be at least 6 characters and match each other");
+
+			$("#createAccountButton").click(
+				function(){
+					if(!$("#email").hasClass("validationPassed")||
+						!$("#firstName").hasClass("validationPassed")||
+						!$("#lastName").hasClass("validationPassed")||
+						!$("#registerPassword").hasClass("validationPassed")||
+						!$("#registerPassword2").hasClass("validationPassed")){
+							$("#messageText").html("<h4>Account Not Created!</h4>Please fix the errors below and try again.");
+							$("#messageBox").attr("hidden",false);
+							return;
+					}
+					var userJson = {};
+					userJson.email = $('#email').val();
+					userJson.firstName = $('#firstName').val();
+					userJson.lastName = $('#lastName').val();
+					userJson.password = $('#registerPassword').val();
+					userJson.alias = getNewAlias();
+					
+					var contactDevices = {};
+          
+          userJson.contactDevices = contactDevices;
+					
+					console.log("Saving new user");
+					  saveUser(userJson,function(data){
+                                          console.log(data);
+                                            if (data === "1") {
+					      $("#messageText").html("<h4>Account Not Created!</h4>User with that email already exists.");
+					      $("#messageBox").attr("hidden",false);
+                                              $("#email").focus();
+                                            } else if(data === "2"){
+							$("#messageText").html("<h4>Account Not Created!</h4>There are no more available alias numbers. Please wait for more to be added soon.");
+					      $("#messageBox").attr("hidden",false);
+                                              $("#email").focus();
+                                            }else {
+						login(userJson,function(data){
+							console.log("login register test:"+data);
+							if(data.split("=")[1]!="0"){
+								document.cookie=data+";domain:"+document.domain;
+								window.location.href="/"
+							}
+						});
+                                            }
+					  });
+                                 }
+			);
+			$("#signin").click(
+				function(){
+					var userJson = {};
+					userJson.email = $('#loginEmail').val();
+					userJson.password = $('#loginPassword').val();
+					login(userJson,function(data){
+						if(data.split("=")[1]=="0"){
+							$("#messageText").html("<h4>Login Error!</h4>Username/Password Incorrect. Please try again.");
+							$("#messageBox").attr("hidden",false);
+						}else{
+							document.cookie=data;
+							window.location.href="/"
+						}
+					});
+					
+				}
+			);
+                    });
+		</script>
+	</body>
+</html>

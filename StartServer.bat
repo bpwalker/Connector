@@ -1,0 +1,1 @@
+vertx run server.js
