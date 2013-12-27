@@ -7,8 +7,6 @@ var mustache = require('./mustache');
 var base64 = require('./base64').base64;
 var MONGOADDRESS = 'BConn.Persistor';
 var eb = vertx.eventBus;
-var spiderApi = vertx.createHttpClient().host("bcon-1.oscar.ncsu.edu").port(8580).keepAlive(false);
-var irisApi = vertx.createHttpClient().host("api.inetwork.com").port(443).ssl(true).trustAll(true).keepAlive(false);
 
 //Rooms/Users for videochat
 var rooms = {}; //user key, room value
